@@ -17,7 +17,7 @@ export const loginUser =async (req, res) => {
       const {email, password} = req.body;
 
       //check if user exist
-      const user = await UserModel.findone({email});
+      const user = await UserModel.findOne({email});
 
       if(!user){
         return res.json({success: false, msg:"user does not exist"})
