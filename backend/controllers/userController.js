@@ -1,63 +1,98 @@
-import User from "../models/userModel";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import UserModel from "../models/userModel.js"
+import validator from "validator"
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
-// @desc  user registration 
-// @route POST /api/users/register
-// @access public
 
-const  registerUser = async (req, res) =>{
-   const  {name, email, password} = req.body;
+const createToken = (id) =>{
+    return jwt.sign({id}, process.env.JWT_SECRETE);
+}
 
-   const userExist = await User.findOne(email);
-   if (userExist) {
-    return res.status(400).json({message : "user already exist"})
-   }
+//Login user
+
+export const loginUser =async (req, res) => {
+         
+ try {
+    
+      const {email, password} = req.body;
+
+      //check if user exist
+      const user = await UserModel.findone({email});
+
+      if(!user){
+        return res.json({success: false, msg:"user does not exist"})
+      }
+
+    //check if the password provided matches the user saved pasword in the database
+      const isMatch = await bcrypt.compare(password, user.password)
+
+      //if it matches generate token
+      if(isMatch){
+        const token = createToken(user._id)
+        res.json({success: true, token})
+      }else{
+        res.json({success: false, msg: "invalid password"})
+      }
+
+ } catch (error) {
+    console.log(error);
+    res.json({success: false, message: error.message})
+ }
+
+
+
+    } 
+        
+
+//Register user
+
+export const registerUser =async (req, res) => {
    
-   const hashedPassword = await bcrypt.hash(password, 10);
+     try {
+        const {name, email, password} = req.body
 
-   const user = await User.create({
-    name, 
-    email,
-    password : hashedPassword
-   });
+        //checking if user already exist
+        const isUser = await UserModel.findOne({email});
+        if (isUser) {
+            return res.json({success : false, msg : "user already exist"})
+        }
 
-   res.status(201).json({
-    _id : user._id,
-    name : user.name,
-    email : user.email,
-    token : generateToken(user._id)
-   })
+        //validating email format & strong password
+        if (!validator.isEmail(email)){
+            return res.json({success : false, msg : "invalid email"})
+        }
+
+        if (password.length < 8){
+            return res.json({success : false, msg : "strong password needed"})
+        };
+
+        //hash user password
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+
+        //create the user
+        const newUser = new UserModel({
+            name,
+            email,
+            password : hashPassword
+        });
+
+        //save the new user in the database
+        const user = await newUser.save();
+
+        const token = createToken(user._id)
+
+        res.json({success : true, token})
+
+    } catch (error) {
+        console.log(error);
+        res.json({success: false, message: error.message})
+    }
 }
 
 
-//@desc login user
-//@route POST /api/users/login
-//@access public
+//Admin user
 
-const loginUser = async (req, res)=>{
-    const {name, email, password} = req.body;
-
-    const user = await User.findOne(email);
-    if (!user){
-        return res.status(400).json({message:"invalid user"})
-    }
-
-    const matchPassword = bcrypt.compare(password, user.password)
-
-    if (!matchPassword){
-        return res.status(400).json({message : "invalid user"})
-    }
-
-    res.status(201).json({
-       _id: user._id,
-       name: user.name,
-       email: user.email,
-       token: generateToken(user._id) 
-    });
-};
-
-const generateToken = (id)=>{
-    return jwt
+export const adminLogin=async (req, res) => {
+   
 }
-

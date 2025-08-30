@@ -31,7 +31,8 @@ const productSchema = new mongoose.Schema({
     },
     images : [
         {
-            type : String
+            type : Array,
+            required : [true, "Images are required"]
         }
     ],
 
