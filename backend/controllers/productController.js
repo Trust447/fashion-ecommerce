@@ -1,5 +1,6 @@
 import {v2 as cloudinary} from "cloudinary";
 import productModel from "../models/productModel.js";
+import productRouter from "../routes/productRoutes.js";
 
 
 //function for Add product
@@ -80,5 +81,14 @@ export const removeProduct = async (req, res)=>{
 
 //function for single product details
 export const singleProduct = async (req, res)=>{
+
+    try {
+        const {id} = req.body;
+        const product = await productModel.findById(id);
+        res.json({success: true, product})
+        } catch (error) {
+        console.log(error);
+        res.json({success: false, msg: error.message})
+    }
     
 }
