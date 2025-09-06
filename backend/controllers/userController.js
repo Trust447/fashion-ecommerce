@@ -9,7 +9,6 @@ const createToken = (id) =>{
 }
 
 //Login user
-
 export const loginUser =async (req, res) => {
          
  try {
@@ -39,13 +38,12 @@ export const loginUser =async (req, res) => {
     res.json({success: false, message: error.message})
  }
 
-
-
-    } 
+} 
         
 
-//Register user
 
+
+//Register user
 export const registerUser =async (req, res) => {
    
      try {
@@ -91,8 +89,10 @@ export const registerUser =async (req, res) => {
 }
 
 
-//Admin user
 
+
+
+//Admin user
 export const adminLogin=async (req, res) => {
    
   try {
